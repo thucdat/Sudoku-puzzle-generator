@@ -1,71 +1,72 @@
-# Generate a random seed for a sudoku puzzle
-# Generate a valid sudoku solution for that puzzle
-# Punch random holes in that solution
-
-def generate_sudoku_solution(sudoku_puzzle)
-	# This function takes arg a random string of numbers from 1 to 9.
-	# and produces a sudoku solution.
-	# Then it punches holes in that solution to create a sudoku puzzle
-	result = ''
-	sudoku_puzzle.map {
-		|a|(i= (a =~/0/)) ?	
-			(v = *?1..?9).fill {
-				|j| v -= [a[j + i - (k = i % 9)] , 
-						  a[k + j *= 9] , 
-						  a[j % 26 + i - i % 3 - i % 27 + k]]
-			} +
-			v.map {
-					|m| sudoku_puzzle . << $` << m <<$'
-			}
-		: result << a
-	}
-	result
+def generate_sudoku_puzzle()
+    # This function creates a complete filled Sudoku
+    maxTries    = 100 #stops the program after 100 attempts
+    count       = 9999
+    puzzle      = []
+    while count > maxTries do    # To trigger the creation of the Sudoku
+        # Initialize the 9x9 array with 0
+        puzzle = []
+        for r in 1..9
+            row = []
+            for r in 1..9
+                row << 0
+            end
+            puzzle << row
+        end
+        
+        # Fill the 9x9 array with unique values from 1 to 9
+        # in the units (rows, columns, and 3x3 sub arrays)
+        myRand = Random.new
+        for row in 0..8
+            for col in 0..8
+                thisRow = puzzle[row]
+                thisCol = []
+                for r in 0..8
+                    thisCol << puzzle[r][col]
+                end
+                subRow, subCol = row/3, col/3
+                subArr = []
+                for subR in 0..2
+                    for subC in 0..2
+                        subArr << puzzle[subRow*3 + subR][subCol*3 + subC]
+                    end
+                end
+                randVal, count = 0, 0
+                # Attemp to fill the Sudoku Array with valid numbers
+                while (thisRow.include?(randVal) or thisCol.include?(randVal) or subArr.include?(randVal))
+                    randVal = myRand.rand(1..9)
+                    count += 1
+                    if count > maxTries
+                        break
+                    end
+                end
+                if count > maxTries
+                    break
+                end
+                # Fill the Sudoku Array with found unique number
+                puzzle[row][col] = randVal
+            end
+            if count > maxTries
+                break
+            end
+        end
+    end
+    return puzzle
 end
 
-def punch_holes(sudoku_solution)
-	
+def print_puzzle(puzzle)
+    # This function prints a puzzle
+    print "["
+    for r in 0..8
+        print puzzle[r], "\n"
+    end
+	print "]"
 end
 
-def generate_sudoku_seed()
-	# This function generates randomly a seed for a sudoku puzzle
-	sudoku_seed = []
-	puzzle = [0] * 81
+def print_sudoku_html(sudoku_puzzle, filename)
+	# This function prints a sudoku puzzle in a html
+	# file with borders, it fills the empty with underscores.
 
-	a = (1..9).sort_by{rand}
-	b = (1..9).sort_by{rand}
-	c = (1..9).sort_by{rand}
-
-	puzzle[0..2] = a[0..2]
-	puzzle[9..11] = a[3..5]
-	puzzle[18..20] = a[6..8]
-
-	puzzle[30..32] = b[0..2]
-	puzzle[39..41] = b[3..5]
-	puzzle[48..50] = b[6..8]
-
-	puzzle[60..62] = b[0..2]
-	puzzle[69..71] = b[3..5]
-	puzzle[78..80] = b[6..8]
-
-	puzzle.each_slice(9){
-		|s| sudoku_seed.push(s)
-	}
-	return sudoku_seed
-end
-
-def print_sudoku(sudoku_puzzle) 
-	result = "["
-	newline = ""
-	sudoku_puzzle.each {
-		|s| result += newline + '[' + s.map!(&:to_s).join(" ")
-		result += "]"
-		newline = "\n "
-	}
-	result += "]"
-	puts result
-end
-
-def print_sudoku_html(sudoku_puzzle)
 	prettyTable = "<!DOCTYPE html>\n"
 	prettyTable += "<html>\n"
 	prettyTable += "<head>"
@@ -91,7 +92,7 @@ def print_sudoku_html(sudoku_puzzle)
 	for index in 0 ... sudoku_puzzle.size
 		prettyTable += "  <tr>"
 		sudoku_puzzle[index].each {
-			|t| prettyTable += "<td>#{t}</td>"
+			|t| prettyTable += "<td>" + (t.to_s() == "0" ? "_" : t.to_s()) + "</td>"			
 		}
 		prettyTable += "  </tr>"
 	end
@@ -101,13 +102,83 @@ def print_sudoku_html(sudoku_puzzle)
 	prettyTable += "</body>"
 	prettyTable += "</html>"
 
-	File.write('sudoku_solution.html', prettyTable)
+	File.write(filename, prettyTable)
 end
 
-sudoku_puzzle = generate_sudoku_seed()
+def punch_holes(puzzle)
+    # This function punches holes in a complete filled Sudoku to create a puzzle
+    array_to_string = puzzle.to_s().gsub(/[\"\[\]\s\,]/, "")
+    64.times{array_to_string[rand(81)] = "0"}           # punch 64 holes
+    # Construct a 9x9 array of arrays from a string
+    apuzzle = []
+    for row in 0..8
+        thisRow = array_to_string[(row+row*8)..(row+(row+1)*8)]
+        myRow   = []
+        thisRow.split('').each { |c| myRow << c.to_i() }
+        apuzzle << myRow
+    end
+    return apuzzle
+end
 
-aaa = ["200370009009200007001004002050000800008000900006000040900100500800007600400089001"]
-puts generate_sudoku_solution(aaa)
-print_sudoku(sudoku_puzzle)
-print_sudoku_html(sudoku_puzzle)
+def array_has_unique_1_to_9(anArray)
+	result = TRUE
+	for elem in 1..9
+		result &= anArray.count(elem) == 1
+		if not result
+			raise "Element " + anArray[elem].to_s() + " is not unique" +
+			      "in array" + anArray.to_s()
+		end
+	end
+	return result
+end	
 
+def test_a_sukodu(puzzle)
+	# This function tests if a 9x9 Array conforms to the
+	# rule of sudoku.
+	# It test if every units (row, col, and subarray of 3x3) contains
+	# only unique digits from 1 to 9.
+	for row in 0..8
+		for col in 0..8
+			thisRow = puzzle[row]
+			result = array_has_unique_1_to_9(thisRow)
+			thisCol = []
+			for r in 0..8
+				thisCol << puzzle[r][col]
+			end
+			result &= array_has_unique_1_to_9(thisCol)
+			subRow, subCol = row/3, col/3
+			subArr = []
+			for subR in 0..2
+				for subC in 0..2
+					subArr << puzzle[subRow*3 + subR][subCol*3 + subC]
+				end
+			end
+			result &= array_has_unique_1_to_9(subArr)
+		end
+	end
+	if result
+		puts "This Sudoku conforms to the rule"
+	end
+end
+
+def aSampleTest()
+	sudoku = [
+	[4, 7, 5, 8, 1, 6, 3, 2, 9],
+	[6, 3, 2, 7, 9, 5, 4, 1, 8],
+	[9, 8, 1, 4, 3, 2, 7, 5, 6],
+	[8, 4, 9, 5, 2, 3, 6, 7, 1],
+	[7, 2, 6, 1, 8, 9, 5, 3, 4],
+	[1, 5, 3, 6, 7, 4, 9, 8, 2],
+	[5, 1, 8, 9, 4, 7, 2, 6, 3],
+	[2, 9, 7, 3, 6, 1, 8, 4, 5],
+	[3, 6, 4, 2, 5, 8, 1, 9, 7]
+	]
+
+	test_a_sukodu(sudoku)
+end
+
+complete_puzzle = generate_sudoku_puzzle()
+test_a_sukodu(complete_puzzle)
+print_puzzle(complete_puzzle)
+sudoku_puzzle = punch_holes(complete_puzzle)
+print_sudoku_html(sudoku_puzzle, "prettyTable.html")
