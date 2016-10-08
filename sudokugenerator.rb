@@ -7,11 +7,7 @@ def generate_sudoku_puzzle()
         # Initialize the 9x9 array with 0
         puzzle = []
         for r in 1..9
-            row = []
-            for r in 1..9
-                row << 0
-            end
-            puzzle << row
+            puzzle << ([0] * 9)
         end
         
         # Fill the 9x9 array with unique values from 1 to 9
@@ -60,7 +56,7 @@ def print_puzzle(puzzle)
     for r in 0..8
         print puzzle[r], "\n"
     end
-	print "]"
+	puts "]"
 end
 
 def print_sudoku_html(sudoku_puzzle, filename)
@@ -106,18 +102,14 @@ def print_sudoku_html(sudoku_puzzle, filename)
 end
 
 def punch_holes(puzzle)
-    # This function punches holes in a complete filled Sudoku to create a puzzle
-    array_to_string = puzzle.to_s().gsub(/[\"\[\]\s\,]/, "")
-    64.times{array_to_string[rand(81)] = "0"}           # punch 64 holes
-    # Construct a 9x9 array of arrays from a string
-    apuzzle = []
-    for row in 0..8
-        thisRow = array_to_string[(row+row*8)..(row+(row+1)*8)]
-        myRow   = []
-        thisRow.split('').each { |c| myRow << c.to_i() }
-        apuzzle << myRow
+    myRand = Random.new
+    1.upto(64) do
+        aRand = myRand.rand(0..80)
+        row = aRand / 9
+        col = aRand % 9
+        puzzle[row][col] = 0
     end
-    return apuzzle
+    return puzzle
 end
 
 def array_has_unique_1_to_9(anArray)
@@ -181,4 +173,5 @@ complete_puzzle = generate_sudoku_puzzle()
 test_a_sukodu(complete_puzzle)
 print_puzzle(complete_puzzle)
 sudoku_puzzle = punch_holes(complete_puzzle)
+print_puzzle(sudoku_puzzle)
 print_sudoku_html(sudoku_puzzle, "prettyTable.html")
