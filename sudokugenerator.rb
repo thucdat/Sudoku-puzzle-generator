@@ -102,6 +102,8 @@ def print_sudoku_html(sudoku_puzzle, filename)
 end
 
 def punch_holes(puzzle)
+    # This function punches randomly upto 64 holes in a
+    # complete Sudoku
     myRand = Random.new
     1.upto(64) do
         aRand = myRand.rand(0..80)
@@ -113,6 +115,7 @@ def punch_holes(puzzle)
 end
 
 def array_has_unique_1_to_9(anArray)
+        # This function verifies that an array has unique numbers from 1 to 9
 	result = TRUE
 	for elem in 1..9
 		result &= anArray.count(elem) == 1
@@ -169,9 +172,20 @@ def aSampleTest()
 	test_a_sukodu(sudoku)
 end
 
+# Create a complete sudoku puzzle
 complete_puzzle = generate_sudoku_puzzle()
+
+# Verifies that the above puzzle is a complete sudoku
 test_a_sukodu(complete_puzzle)
+
+# Print the complete puzzle
 print_puzzle(complete_puzzle)
+
+# Punch holes to create a sudoku puzzle
 sudoku_puzzle = punch_holes(complete_puzzle)
+
+# Print the sudoku puzzle
 print_puzzle(sudoku_puzzle)
+
+# Print the sudoku puzzle in html format
 print_sudoku_html(sudoku_puzzle, "prettyTable.html")
