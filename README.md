@@ -13,7 +13,7 @@ I also provide a function to print the puzzle in html format that has borders.
 Clone this file from here:
 https://github.com/thucdat/Sudoku-puzzle-generator/
 
-There is only one file: sudokugenerator.rb
+There is only one file: sudokugenerator.rb.
 
 At the end of this file, there is a sample execution which produces the presentation
 of the Sudoku puzzle.
